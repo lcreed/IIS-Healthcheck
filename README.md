@@ -28,9 +28,7 @@ After the health check runs successfully, it will produce a compressed archive i
 - [SuiteHealthChecker-Failures.html](SampleFiles/SuiteHealthChecker-Failures.html)
   - This is a subset of the primary report which only contains warnings and failures.  
 
-### Issues and Enhancements
 
-Please log all requests for changes or fixes in the [issues tab](https://github.ibm.com/cio-mici-sre/ansible-iisds-healthcheck/issues) of the main repository.  
 
 ## Requirements
 
@@ -67,17 +65,5 @@ CLI playbook syntax example.  Run from local clone directory:
 
 >ansible-playbook -i ~/inventory -l hostname* createReport.yml
 
-## Updating to Future Releases of ISALite
-
-This procedure will be documented in a future JIRA task in a linked ddocument. 
-
-## Author Information
-
-This role was created by the CIO's SRE Automation team.  Contact us via our Slack channel: #sre-automation-team
-
 ## Miscellaneous
 
-ISALite Repository
-- Issues discovered and reported as part of this effort:  https://github.ibm.com/InformationServer/ISALite/issues
-
-Information Server Slack Channel #informationserver

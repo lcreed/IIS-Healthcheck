@@ -1,0 +1,43 @@
+# variable with the filename of latest version of ISALite
+isalite_blob: ISALiteInformationServer_S11.7.1.1.tar.gz
+
+
+iisds_healthcheck:
+  configpath: "/home/{{ ansible_user }}/IISDS_Healthcheck/config"
+  reportpath: "/home/{{ ansible_user }}/IISDS_Healthcheck/reports"
+  tempzip: tmpISAHC.zip
+  customresponsefile: IISHC-Custom.rsp
+  customauthfile: .isadmin_credentials.txt
+  resptemplate: IISHC-Custom-FullFile-S11711.rsp.j2
+  authtemplate: isadmin_authfile.j2
+
+
+# iis credentials needed for response file template
+# we get the enrypted version of the password from the host filesystem
+# isadmin creds are only good if the password hasn't been changed since the host was built
+iis_password:
+  encrypted:
+    isadmin: "{{ slurp_isadmin_authfile.content | b64decode | regex_search('(?<=password=).*$') }}"
+    xmeta: "{{ slurp_database_properties.content | b64decode | regex_replace('\\r\\n', '\\n') |  regex_search('(?<=password=).*$') }}"
+
+
+# path to isadmin credential file
+authfilepath: "{{ iisds_healthcheck.configpath }}/{{ iisds_healthcheck.customauthfile }}"
+
+# summary output
+show_signature: true
+
+summary_banner: |
+  
+  -------------------------------------------------------------
+  The IBM Information Server Health Check has completed.
+  -------------------------------------------------------------
+  
+  The following failures were reported by ISALite:
+  "{{ healthcheck_failures.stdout | from_json | json_query('[?severity == `FAILED`]') }}"
+
+  Note that some of the reported failures may be false positives as not all components are 
+  installed and configured as part of the Infosphere standard build.
+
+  You can find the full copy of this report on the host here:
+  "{{ newreport }}"

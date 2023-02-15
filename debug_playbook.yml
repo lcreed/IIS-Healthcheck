@@ -1,0 +1,21 @@
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - debug:
+        var: ansible_python_interpreter
+
+    - debug:
+        var: ansible_playbook_python
+
+    - debug:
+        msg: "{{ vars | combine({'groups': {}, 'group_names': [], 'hostvars': {}}) }}"
+
+    - debug:
+        var: environment
+
+    - tempfile:
+        state: directory
+      register: control_tempdir
+
+    - script: roles/datastage_scan/files/parse_healthcheck_output.py /tmp/SuiteHealthChecker-Failures.html
+

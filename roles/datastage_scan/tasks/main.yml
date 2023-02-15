@@ -1,0 +1,251 @@
+# Bugs:
+# had to add foo=bar line to response file due to read errors
+# from app during non-interactive runs.  Works fine from cli
+# but fails via script.
+# can update logger settings in ISALite to get additional details
+# during failed runs
+
+# Basic Workflow (if IIS host)
+# 1. Compare existing ISALite version with the one to be deployed.  If out of date, upgrade
+# 2. Create directory to store reports and config files if they don't already exist - incomplete
+# 3. Populate the response file template with the data from the host and deploy to config path
+# 4. Create an auth file with the isadmin encrypted password to be used for this and future automation
+# 5. Run precheck, using auth file, to verify system is up with basic connectivity,  DB and webservices 
+# 6. Run ISALite healthcheck
+# 7. Parse results and filter out the list of failures to be ignored
+#    Given we are not going to use ticketing, evaluation of errors to filter out false alarms becomes less important
+# 8. email the html pages from the report to the person that ran the job or email address in override var - future enhancement
+# 9. clean up temp dirs
+
+
+# Workflow 1
+
+- name: Begin Health Check Processing
+  debug:
+    msg: "Beginning Infosphere Health Check Job"
+  changed_when: show_signature
+  notify: summary_banner_splash
+  run_once: true
+
+- name: Extract buildinfo.txt from new version of ISALite into temporary directory on {{lookup("pipe","hostname")}}
+  run_once: true
+  delegate_to: localhost
+  block:
+    - name: Create temp directory on controller
+      tempfile:
+        state: directory
+      register: control_tempdir
+      notify: Delete Controller temp directory
+
+    - name: Extract new ISA package to {{ control_tempdir.path }} on controller host
+      unarchive:
+        src: "{{ isalite_blob }}"
+        dest: "{{ control_tempdir.path }}"
+
+    - name: Register buildinfo.txt on controller
+      stat:
+        path: "{{ control_tempdir.path }}/ISALite/buildinfo.txt"
+      register: stat_isalite_new_buildinfo
+
+- name: Register buildinfo.txt on target host
+  stat:
+    path: "{{ infoserver_base_path }}/ISALite/buildinfo.txt"
+  register: stat_isalite_old_buildinfo
+
+- name: After comparing both buildinfo.txt files, determined that ISALite is out of date.  Upgrading...
+  become: true
+  when:
+    - stat_isalite_new_buildinfo.stat.checksum != stat_isalite_old_buildinfo.stat.checksum | default(None)
+  block:
+    - name: Remove old ISALite
+      file:
+        path: "{{ infoserver_base_path }}/ISALite"
+        state: absent
+
+    - name: Deploy new ISALite package
+      unarchive:
+        src: "{{ isalite_blob }}"
+        dest: "{{ infoserver_base_path }}"
+
+# Workflow 2
+
+# Create new directories for reports and configuration 
+- name: Create directories if needed to store the healthcheck report and response file
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+  loop:
+    - "{{ iisds_healthcheck.configpath }}"
+    - "{{ iisds_healthcheck.reportpath }}"
+
+# Fix needed:  delete all but last report and delete the iisds_healthcheck.tempzip if it exists
+- name: Find old files from {{ iisds_healthcheck.reportpath }} directory, if it exists
+  become: true
+  find:
+    paths: "{{ iisds_healthcheck.reportpath }}"
+    age: 30d
+  register: oldreports
+
+- name:  Purge reports older than 30 days
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ oldreports.files }}"
+    
+# Workflow 3
+
+# The response file needs isadmin and xmeta passwords.  Scrape encrypted versions from host
+# This automation assumes isadmin and xmeta are the ids in use.  Future releases should scrape
+# the user ids from the file system, not just the encrypted passwords
+- name: Get encrypted version of isadmin password to use in health check response file
+  become: true
+  slurp:
+    src: "{{ infoserver_base_path }}/_uninstall/payloads/DataStageCommon/CognitiveDesignerServices/backups/remove.CognitiveDesignerServices.isadmin.authfile/CognitiveDesignerServices.isadmin.authfile"
+  register: slurp_isadmin_authfile
+
+# - debug:
+#     msg: "{{ slurp_isadmin_authfile.content | b64decode }}"
+
+# - debug:
+#    msg: "{{ slurp_isadmin_authfile.content | b64decode | regex_search('(?<=password=).*$') }}"
+
+- name: Get encrypted version of xmeta password to use in health check response file
+  become: true
+  slurp:
+    src: "{{ infoserver_base_path }}/ASBServer/conf/database.properties"
+  register: slurp_database_properties
+
+# - debug:
+#     msg: "{{ slurp_database_properties.content | b64decode }}"
+
+# - debug:
+#    msg: "{{ slurp_database_properties.content | b64decode | regex_search('(?<=password=).*$') }}"
+
+
+- name: Deploy custom response file to be used to run health checks into {{ iisds_healthcheck.configpath }}
+  template:
+    src: "{{ iisds_healthcheck.resptemplate }}"
+    dest: "{{ iisds_healthcheck.configpath }}/{{ iisds_healthcheck.customresponsefile }}"
+    mode: 0750
+
+# Workflow 4
+# this file will need to be manually updated with the new encrypted isadmin password if it ever changes DOC THIS
+- name: Create authentication file so that commands can use encrypted passwords
+  template:
+    src: "{{ iisds_healthcheck.authtemplate }}"
+    dest: "{{ authfilepath }}"
+    mode: 0600
+    force: no
+
+# Workflow 5
+# run precheck
+- name: Get IIS console listener port
+  become: true
+  shell: "./versionInfo"
+  args:
+    chdir: "{{ infoserver_base_path }}/_uninstall"
+  register: versioninfooutput
+
+- name: Doing initial health assessment before running full health check
+  become: true
+  vars:
+    isport: "{{ versioninfooutput.stdout | regex_search('is.console.port\\s*=\\s*(\\d+)', '\\1') | first }}"
+  shell: "./DirectoryCommand.sh -url https://localhost:{{ isport }} -authfile {{ authfilepath }} -list USERS"
+  args:
+    chdir: "{{ infoserver_base_path }}/ASBServer/bin"
+  # async: 600
+  # poll: 30
+  register: precheck_output
+  failed_when: "'Listing users in ASB directory' not in precheck_output.stdout"
+  # if output indicates bad password, tell user to override password with var and rerun
+  # other failures - log full output to user.  i.e. the precheck command received the following error:
+- debug:
+    msg: "{{ precheck_output }}"
+
+
+# Workflow 6
+# Run ISALite with custom response file to create a health check report zip
+- name: Executing Information Server Health Check.  This may take a few minutes . . . .
+  become: true
+  shell: "./runISALite.sh -console {{ iisds_healthcheck.configpath }}/{{ iisds_healthcheck.customresponsefile }}"
+  args:
+    chdir: "{{ infoserver_base_path }}/ISALite"
+  async: 600
+  poll: 30
+  register: hc_output
+  failed_when: "'The collection has completed successfully.' not in hc_output.stdout"
+
+# - debug:
+  #  msg: "{{ hc_output }}"
+
+- debug:
+    msg: Health check report has been created.
+
+- name: Get new health check package file name
+  set_fact:
+    # postive look behind assertion
+    newreport: "{{ hc_output.stdout | regex_search('(?<=file has been renamed ).*(?=. Please disregard )') }}"
+
+- name: Set {{ ansible_user }} as owner of {{ newreport }}
+  become: true
+  file:
+    path: "{{ newreport }}"
+    state: file
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+
+# Workflow 7
+# Create a temp directory on target server and extract the report zip to it
+- name:  Create temp directory for parsing the health check report
+  tempfile:
+    state: directory
+  register: report_tempdir
+  notify: Delete Target temp directory
+
+- name: Unzip {{ newreport }} into {{ report_tempdir.path }} directory for parsing
+  unarchive:
+    src: "{{ newreport }}"
+    dest: "{{ report_tempdir.path }}"
+    remote_src: true
+
+# this is where the actual failure report gets processed to determine if there are serious errors
+- fetch:
+    src: "{{ report_tempdir.path }}/SuiteHealthChecker-Failures.html"
+    dest: "{{ control_tempdir.path }}"
+  register: fetch_healthcheck_failures
+
+- name: parse SuiteHealthChecker-Failures.html
+  script: "parse_healthcheck_output.py {{ fetch_healthcheck_failures.dest }}"
+  delegate_to: localhost
+  register: healthcheck_failures
+
+# - debug:
+#     msg: "{{ healthcheck_failures.stdout | from_json | json_query('[?severity == `FAILED`]') }}"
+
+# This section can be used to filter out false positives.  
+# May be implemented in later release
+# add entries to the ignore_ids that can be flagged as unimportant failures
+# - set_fact:
+#     relevant_findings: "{{ healthcheck_failures.stdout | from_json | json_query('[?severity == `FAILED`]') | json_query(ignore_query) }}"
+#   vars:
+#     ignore_ids:
+#       - CDIHC1171I
+#       - CDIHC1095I
+#     ignore_fragments: "{{ ignore_ids | map('regex_replace', '^(.*)$', 'id != `\\1`') | list }}"
+#     ignore_query: "[?{{ ignore_fragments | join(' && ') }}]"
+    
+# - debug:
+#     msg: "Found {{ relevant_findings | length }} relevant findings."
+
+# Workflow 8 - future release if there is demand for it
+#  Send email to the person running the job with the two html files attached
+
+# Workflow 9
+# implemented in handlers
+
+#  Figure out how to get the package on COS - lowest priority
+

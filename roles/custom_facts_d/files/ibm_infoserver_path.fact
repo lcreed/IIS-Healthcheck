@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import json
+from os.path import abspath, join
+import re
+
+def main():
+    result = {
+        'installed': False
+    }
+    with open('/etc/services') as services_file:
+        for line in services_file:
+            if 'dsrpc' in line:
+                result['installed'] = True
+                result['base_path'] = abspath(join(re.search(r'(?<=@)/.*$', line).group(), '../..'))
+
+    print(json.dumps(result))
+
+if __name__ == '__main__':
+    main()

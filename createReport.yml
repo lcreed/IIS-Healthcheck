@@ -1,0 +1,19 @@
+- hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Deploy custom fact script
+      include_role:
+        name: custom_facts_d
+
+
+    - when: ansible_local.ibm_infoserver_path.installed | default(False) | bool
+      include_role:
+        name: datastage_scan
+
+
+# Run syntax for CLI testing:
+# cd /Path_To_Local_Clone
+# if parsing task is enabled, activate custom python environment
+# i.e. pyenv # alias to activate python custom environment
+# ansible-playbook -i ~/inventory -l tpydaliisds01* thisplaybookname.yml

@@ -1,0 +1,320 @@
+
+################################################################################
+# Do not delete or modify the following version information lines:
+# Response File Version: 2
+# System Plug-in: 4.0.1.101123-1186
+# Common Inventory Sub Agent: 1.3.01.20101119
+# IBM Support Assistant Lite: 1.3.4.101123-1186
+# IBM ISALite for InfoSphere Information Server: S11.7.1.1
+# Jakarta Oro Plug-in: 2.0.7.101123-1186
+# IBM Support Assistant Lite Core: 1.3.4.101123-1186
+# IBM Support Assistant Lite Shared: 1.3.4.101123-1186
+#
+
+
+################################################################################
+# Filename for saving the collected data:
+#
+
+CollectionZipName=/home/cioadmin/temphc.zip
+
+################################################################################
+# Enter 1 or yes to create the collection zip file at 
+# /home/cioadmin/temphc.zip
+#
+
+CreateCollectionZipFile=1
+
+################################################################################
+# Enter the number or title of the IBM Support Assistant Lite 
+# collection option you want or enter RECOVER to recover from a 
+# previous IBM Support Assistant Lite tool collection or enter QUIT to 
+# end the tool
+#
+
+
+################################################################################
+# 1: General Diagnostic Health Checker
+# 2: InfoSphere Information Server Collector Tool
+# 3: InfoSphere DataStage Job Logs Collector
+# 4: Additional Collectors
+# 5: Additional Diagnostic Tools
+# 6: System Requirements
+# 7: Utilities
+# 8: Help
+#
+
+CollectionOption=1
+
+################################################################################
+# The version of the ISALite tool you are using is S11.7.1.1 [drop 6] 16-APR-2020. A newer and enhanced version of the tool may be available for download at www.ibm.com/support/docview.wss?uid=swg24022700 . Verify the site for available upgrades and update the tool if necessary.
+# 1:Continue
+# 2:Continue and skip this test in future
+# 3:Cancel
+#
+
+InputOption=1
+
+################################################################################
+# The input of the following parameters is optional. Press [Enter] to accept the default value displayed.
+#
+
+
+################################################################################
+# InfoSphere Information Server components installed and used in this 
+# computer (InfoSphere DataStage services, Metadata Repository, 
+# InfoSphere Information Analyzer client, etc.):
+#
+
+
+################################################################################
+# <Health Check Report>:
+#
+
+fieldTask.machine.usage=Health Check Report
+
+################################################################################
+# Case/APAR number associated with this collection file, if applicable:
+#
+
+
+################################################################################
+# 
+#
+
+fieldTask.pmr.number=
+
+################################################################################
+# Short description of the problem to be reported, if applicable:
+#
+
+
+################################################################################
+# <hc report>:
+#
+
+fieldTask.user.description=hc report
+
+################################################################################
+# OPTIONS FOR COMPLETING THE INPUT DIALOG 
+# 1: OK<Continue the collection using the values you set during the INPUT DIALOG>
+# 2: Cancel<Stop the collection>
+#
+
+OptionToCompleteInputDialog=1
+
+################################################################################
+# Enter the installation directory for InfoSphere Information Server:
+#
+
+
+################################################################################
+# </opt/IBM/InformationServer>:
+#
+
+fieldTask.IS.root=/opt/IBM/InformationServer
+
+################################################################################
+# OPTIONS FOR COMPLETING THE INPUT DIALOG 
+# 1: OK<Continue the collection using the values you set during the INPUT DIALOG>
+# 2: Cancel<Stop the collection>
+#
+
+OptionToCompleteInputDialog=1
+
+################################################################################
+# All fields are required
+#
+
+
+################################################################################
+# Metadata Repository user ID<xmeta>:
+#
+
+fieldTask.hc.db.userid=xmeta
+
+################################################################################
+# Metadata Repository user password (may be encrypted using ASBNode/bin/encrypt.[sh/bat])
+# 
+#
+
+InputValue={iisenc}KefvtEV9XT5NVWqOhRB/Sg==
+
+################################################################################
+# InfoSphere Information Server Administrator user ID (IS user)<isadmin>:
+#
+
+fieldTask.hc.is.userid=isadmin
+
+################################################################################
+# Information Server Administrator user password (may be encrypted using ASBNode/bin/encrypt.[sh/bat])
+# 
+#
+
+InputValue={iisenc}2I0Gx06sY7koNssiDGnJ5g==
+
+################################################################################
+# OPTIONS FOR COMPLETING THE INPUT DIALOG 
+# 1: OK<Continue the collection using the values you set during the INPUT DIALOG>
+# 2: Cancel<Stop the collection>
+#
+
+OptionToCompleteInputDialog=1
+
+################################################################################
+# Rename the collection .ZIP file name before you transfer the file to IBM Software Support:
+#
+
+
+################################################################################
+# The recommended file name to ensure that IBM Software Support 
+# recognizes the content of a collection .zip file 
+#
+
+
+################################################################################
+# is: ISA_GenHC_tpydaliisds01_EngServ_2021-01-12_14.39.zip
+#
+
+
+################################################################################
+# 
+#
+
+
+################################################################################
+# Select OK to rename the file to this recommended file name. Select 
+# SKIP to keep the original file name.
+#
+
+
+################################################################################
+# OPTIONS FOR COMPLETING THE INPUT DIALOG 
+# 1: OK<Continue the collection using the values you set during the INPUT DIALOG>
+# 2: Skip<Continue the collection without using the values you set during the INPUT DIALOG>
+# 3: Cancel<Stop the collection>
+#
+
+OptionToCompleteInputDialog=1
+
+################################################################################
+# The collection .zip file has been renamed /home/cioadmin/ISA_GenHC_tpydaliisds01_EngServ_2021-01-12_14.39.zip. Please disregard reports or messages still referencing the old file name of the collection .zip.
+# 1:OK
+#
+
+InputOption=1
+
+################################################################################
+# The Health Checker analysis is complete.
+#
+
+
+################################################################################
+# Total # Tests RUN: 122
+#
+
+
+################################################################################
+# Total # SUCCESSes: 106
+#
+
+
+################################################################################
+# Total # FAILUREs : 1
+#
+
+
+################################################################################
+# Total # WARNINGs : 6
+#
+
+
+################################################################################
+# Total # SKIPPED  : 9
+#
+
+
+################################################################################
+# 
+
+#
+
+
+################################################################################
+# Results from FAILED tests are included in file SuiteHealthChecker-
+# Failures.html
+#
+
+
+################################################################################
+# Results from ALL tests are included in file SuiteHealthChecker.html
+#
+
+
+################################################################################
+# 
+
+#
+
+
+################################################################################
+# The report files are included in 
+# /home/cioadmin/ISA_GenHC_tpydaliisds01_EngServ_2021-01-12_14.39.zip
+#
+
+
+################################################################################
+# 
+
+#
+
+
+################################################################################
+# OPTIONS FOR COMPLETING THE INPUT DIALOG 
+# 1: OK<Continue the collection using the values you set during the INPUT DIALOG>
+#
+
+OptionToCompleteInputDialog=1
+
+################################################################################
+# Question Regarding How the Script Should Proceed
+#
+
+
+################################################################################
+# Would you like the tool to transfer the logs automatically?
+#
+
+
+################################################################################
+# For other ways to exchange data with IBM, see Exchanging data with 
+# IBM (http://www14.software.ibm.
+# com/webapp/set2/sas/f/handbook/policies.html#exchange) 
+#
+
+
+################################################################################
+# Select one::
+# 1: Send the Logs to IBM using secure transfer (HTTPS)
+# 2: FTP the Logs to IBM Support (unencrypted)
+# 3: FTP the Logs to a Different Location (unencrypted)
+# 4: Do Not Transfer the Logs
+#
+
+SelectListOption=4
+
+################################################################################
+# OPTIONS FOR COMPLETING THE INPUT DIALOG 
+# 1: OK<Continue the collection using the values you set during the INPUT DIALOG>
+# 2: Cancel<Stop the collection>
+#
+
+OptionToCompleteInputDialog=1
+
+################################################################################
+# Do you want to run another collection? 
+# 1. Yes
+# 2. No
+#
+
+RunAnotherCollection=2

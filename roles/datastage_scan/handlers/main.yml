@@ -1,0 +1,17 @@
+- name: Delete Controller temp directory
+  file:
+    state: absent
+    path: "{{ control_tempdir.path }}"
+  delegate_to: localhost
+
+- name: Delete Target temp directory
+  file:
+    state: absent
+    path: "{{ report_tempdir.path }}"
+
+
+
+- name: summary_banner_splash
+  debug:
+    msg: "{{ summary_banner.split('\n') }}"
+  run_once: true

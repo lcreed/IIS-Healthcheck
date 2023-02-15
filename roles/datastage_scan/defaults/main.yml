@@ -1,0 +1,3 @@
+infoserver_base_path: "{{
+  ansible_local.ibm_infoserver_path.base_path | default('/opt/IBM/InformationServer')
+}}"

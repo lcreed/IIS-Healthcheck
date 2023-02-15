@@ -1,0 +1,24 @@
+# implement custom facts
+- name: Create directory to Deploy custom facts to host if it doesn't exist
+  become: true
+  file:
+    path: "/etc/ansible/facts.d"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: 0755  
+
+- name: Deploy custom facts script
+  become: true
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/ansible/facts.d"
+    owner: "root"
+    group: "root"    
+    mode: 0755
+  loop: 
+    - "ibm_infoserver_path.fact"
+
+- name: Setup custom fact
+  become: true
+  setup:    
